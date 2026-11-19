@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+bin/
+build/
+dist/
+dmg_root/
+*.dmg

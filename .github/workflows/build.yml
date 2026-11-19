@@ -1,0 +1,47 @@
+name: Build
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  mac:
+    strategy:
+      matrix:
+        os: [macos-14, macos-15-intel]   # Apple Silicon, Intel
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: bash build_mac.sh
+      - uses: actions/upload-artifact@v4
+        with: { name: dmg-${{ matrix.os }}, path: "*.dmg" }
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - shell: pwsh
+        run: |
+          pip install -r requirements.txt
+          New-Item -ItemType Directory -Force bin | Out-Null
+          Copy-Item (python -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())") bin\ffmpeg.exe
+          Invoke-WebRequest https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip -OutFile deno.zip
+          Expand-Archive deno.zip -DestinationPath bin -Force
+          pyinstaller --noconfirm --onefile --windowed --name "YT-Grab" --collect-submodules yt_dlp --collect-all yt_dlp_ejs --add-binary "bin\ffmpeg.exe;bin" --add-binary "bin\deno.exe;bin" app.py
+      - uses: actions/upload-artifact@v4
+        with: { name: windows-exe, path: dist/YT-Grab.exe }
+  release:
+    needs: [mac, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: out, merge-multiple: true }
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: YT Grab build ${{ github.run_number }}
+          files: out/*
