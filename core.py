@@ -130,7 +130,7 @@ def fetch_info(url: str) -> VideoInfo:
         duration=int(dur) if dur else None,
         thumbnail=thumb,
         uploader=info.get("uploader") or info.get("channel") or "",
-        is_live=bool(info.get("is_live")),
+        is_live=bool(info.get("is_live")) and not dur,
     )
 
 
@@ -149,7 +149,6 @@ def build_opts(mode: str, outdir: str, start: Optional[int], end: Optional[int])
         opts["download_ranges"] = download_range_func(
             None, [(float(s), float(end) if end is not None else float("inf"))]
         )
-        opts["force_keyframes_at_cuts"] = True
     opts["outtmpl"] = str(Path(outdir) / f"%(title).120B{suffix}.%(ext)s")
     if mode == "mp3":
         opts["format"] = "bestaudio/best"

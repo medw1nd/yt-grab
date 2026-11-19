@@ -394,14 +394,14 @@ class MainWindow(QWidget):
         self.card.show()
         self.status.setText("")
         self.go.setEnabled(True)
-        if info.duration and not info.is_live and info.duration > 1:
+        if info.duration and info.duration > 1:
             self.slider.setEnabled(True)
             self.slider.set_range(info.duration)
             for w in (self.t_start, self.t_end, self.reset_btn):
                 w.setEnabled(True)
             self.tl_label.setText("Відрізок для завантаження")
         else:
-            self.tl_label.setText("Відрізок недоступний для прямих трансляцій")
+            self.tl_label.setText("Відрізок недоступний: невідома тривалість")
             self.t_len.setText("")
 
     # ------------------------------------------------------ тайм-лайн
