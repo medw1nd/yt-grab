@@ -44,5 +44,9 @@ cp -R "dist/$APP.app" dmg_root/
 ln -s /Applications dmg_root/Applications
 OUT="YT-Grab-${ARCH}.dmg"
 rm -f "$OUT"
-hdiutil create -volname "$APP" -srcfolder dmg_root -ov -format UDZO "$OUT"
+for i in 1 2 3 4 5 6; do
+  hdiutil create -volname "$APP" -srcfolder dmg_root -ov -format UDZO "$OUT" && break
+  echo "hdiutil спроба $i не вдалась, повтор…"; sleep 10
+  [ "$i" = 6 ] && exit 1
+done
 echo "Готово: $(pwd)/$OUT"
